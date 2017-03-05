@@ -37,8 +37,7 @@ else:
 img_count = config['image_count']
 # Gets a set of the saved images.
 saved_imgs = set(os.listdir(download_path))
-phantom_js_path = r'C:\Users\Gautham B A\Documents\Projects\Github\BingWallpaper\deps\phantomjs.exe'
-driver = webdriver.PhantomJS(executable_path=phantom_js_path)
+driver = webdriver.PhantomJS()
 driver.maximize_window()
 
 # Open the webpage.
