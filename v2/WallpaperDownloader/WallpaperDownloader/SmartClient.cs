@@ -11,15 +11,18 @@ using System.Drawing.Imaging;
 
 namespace WallpaperDownloader
 {
-    class Downloader
+    class SmartClient
     {
         private const string baseUrl = "https://www.bing.com";
-        private const string outputDir = @"C:\Users\Gautham\projects\github\BingWallpaper\v2";
+        private readonly string outputDir;
         private readonly Regex rx;
+        private ImagesManifest manifest;
 
-        public Downloader()
+        public SmartClient(string outputDir)
         {
+            this.outputDir = outputDir;
             rx = new Regex("href=\"(?<image_href>/hpwp/\\S+)\"", RegexOptions.Compiled);
+            manifest = new ImagesManifest(outputDir);
         }
 
         private async Task<string> LoadPage()
@@ -42,12 +45,19 @@ namespace WallpaperDownloader
 
         private void DownloadImageAndWriteToFile(string imageUrl)
         {
-            using WebClient webClient = new WebClient();
-            Uri uri = new Uri(imageUrl);
+            var webClient = new WebClient();
+            var uri = new Uri(imageUrl);
             var data = webClient.DownloadData(uri);
 
-            using MemoryStream stream = new MemoryStream(data);
-            using var image = Image.FromStream(stream);
+            if (manifest.IsPresent(data))
+            {
+                Console.WriteLine("Skipping saving image as it already exists");
+                return;
+            }
+            manifest.AddImage(data);
+
+            var stream = new MemoryStream(data);
+            var image = Image.FromStream(stream);
 
             var outputPath = $@"{outputDir}/{ Guid.NewGuid().ToString()}.jpg";
             image.Save(outputPath, ImageFormat.Jpeg);

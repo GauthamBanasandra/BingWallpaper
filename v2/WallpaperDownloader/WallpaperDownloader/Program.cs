@@ -6,8 +6,9 @@ namespace WallpaperDownloader
     {
         static void Main(string[] args)
         {
-            var downloader = new Downloader();
-            downloader.Download();
+            var outputDir = @"C:\Users\Gautham\Pictures\Wallpapers";
+            var client = new SmartClient(outputDir);
+            client.Download();
         }
     }
 }
