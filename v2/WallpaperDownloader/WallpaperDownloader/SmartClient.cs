@@ -13,13 +13,14 @@ namespace WallpaperDownloader
 {
     class SmartClient
     {
-        private const string baseUrl = "https://www.bing.com";
+        private Uri baseUrl;
         private readonly string outputDir;
         private readonly Regex rx;
         private ImagesManifest manifest;
 
         public SmartClient(string outputDir)
         {
+            baseUrl = new Uri("https://www.bing.com");
             this.outputDir = outputDir;
             rx = new Regex("href=\"(?<image_href>/hpwp/\\S+)\"", RegexOptions.Compiled);
             manifest = new ImagesManifest(outputDir);
@@ -27,10 +28,10 @@ namespace WallpaperDownloader
 
         private async Task<string> LoadPage()
         {
-            var client = new HttpClient();
-            var page = await client.GetAsync(baseUrl);
+            using var client = new HttpClient();
+            var page = await client.GetAsync(baseUrl).ConfigureAwait(true);
             var content = page.Content;
-            return await content.ReadAsStringAsync();
+            return await content.ReadAsStringAsync().ConfigureAwait(true);
         }
 
         private string ExtractImageHref(string content)
@@ -45,18 +46,18 @@ namespace WallpaperDownloader
 
         private void DownloadImageAndWriteToFile(string imageUrl)
         {
-            var webClient = new WebClient();
+            using var webClient = new WebClient();
             var uri = new Uri(imageUrl);
             var data = webClient.DownloadData(uri);
 
             if (manifest.IsPresent(data))
             {
-                Console.WriteLine("Skipping saving image as it already exists");
+                Console.WriteLine(Properties.Resources.SkipSavingImage);
                 return;
             }
             manifest.AddImage(data);
 
-            var stream = new MemoryStream(data);
+            using var stream = new MemoryStream(data);
             var image = Image.FromStream(stream);
 
             var outputPath = $@"{outputDir}/{ Guid.NewGuid().ToString()}.jpg";

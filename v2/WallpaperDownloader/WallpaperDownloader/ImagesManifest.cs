@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -10,13 +11,11 @@ namespace WallpaperDownloader
 {
     class ImagesManifest
     {
-        private readonly string outputDir;
         private readonly string manifestPath;
-        private HashSet<string> imagesHashes;
+        private readonly HashSet<string> imagesHashes;
 
         public ImagesManifest(string outputDir)
         {
-            this.outputDir = outputDir;
             manifestPath = $"{outputDir}/manifest.json";
             imagesHashes = new HashSet<string>();
             ReadOrCreateManifest();
@@ -36,15 +35,15 @@ namespace WallpaperDownloader
             }
         }
 
-        private string GetHash(byte[] data)
+        private static string GetHash(byte[] data)
         {
-            using MD5 md5 = MD5.Create();
-            var hash = md5.ComputeHash(data);
+            using var hasher = SHA512.Create();
+            var hash = hasher.ComputeHash(data);
 
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < hash.Length; i++)
             {
-                builder.Append(hash[i].ToString("X2"));
+                builder.Append(hash[i].ToString("X2", CultureInfo.InvariantCulture));
             }
             return builder.ToString();
         }

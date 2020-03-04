@@ -6,7 +6,19 @@ namespace WallpaperDownloader
     {
         static void Main(string[] args)
         {
-            var outputDir = @"C:\Users\Gautham\Pictures\Wallpapers";
+            if (args.Length == 0)
+            {
+                Console.Error.WriteLine("Please specify the path to store the images");
+                return;
+            }
+
+            var outputDir = args[0];
+            if (!System.IO.Directory.Exists(outputDir))
+            {
+                Console.Error.WriteLine("The path specified does not exist");
+                return;
+            }
+
             var client = new SmartClient(outputDir);
             client.Download();
         }
